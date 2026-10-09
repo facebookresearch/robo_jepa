@@ -1,0 +1,44 @@
+__pycache__/
+*.py[cod]
+*.so
+.DS_Store
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.idea/
+.vscode/
+wandb/
+outputs/
+checkpoints/
+*.ckpt
+*.pth
+*.pth.tar
+
+# Local model weights (released checkpoints are hosted outside the repo)
+pretrained/
+weights/
+*.pt
+*.pt2
+*.safetensors
+*.bin
+*.onnx
+*.jit
+
+# Local datasets and data artifacts (top-level dirs only; src/datasets/ and app/robo_jepa/datasets/ are code)
+/data/
+/datasets/
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.mp4
+*.csv
+*.tar
+
+# Cluster-specific SLURM launchers (kept locally, not part of the repo)
+slurm/
+
+# Local test suite and fixtures helpers (kept locally, not part of the repo)
+app/robo_jepa/tests/

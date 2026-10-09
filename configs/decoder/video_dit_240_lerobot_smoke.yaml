@@ -1,0 +1,189 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Smoke test: DiT decoder on the full single-arm LeRobot set, 1 node x 2 H100, 100 optimizer steps.
+app: robo_jepa
+nodes: 1
+tasks_per_node: 2
+gpu_type: h100
+cpus_per_task: 12
+mem_per_gpu: 200G
+folder: /path/to/robo_jepa/logs/decoder/video_dit_240_lerobot_smoke/
+# Run in the sbatch script before training: stage the LeRobot packs + index onto the node SSD.
+slurm_setup:
+  - srun --ntasks=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 bash scripts/data_processing/prepare_data.sh lerobot
+wandb:
+  entity: null
+  project: droid_wm
+  name: DiT-240p-x0-lerobot-smoke
+  off: false
+  run_id: null
+data:
+  # Fir: no S3; packs are staged to the node SSD (env vars are expanded).
+  s3_profile: null
+  s3_prefix: ${SLURM_TMPDIR}/lerobot/
+  train:
+    Lerobot: # single-arm SO-100/101 repos (dataset_index.csv excludes the 15 bimanual repos)
+      embodiment_name: so-101
+      s3_prefix: ''
+      raw_fps: 30
+      fps: 7.5
+      intermediate_frames_fps: 30
+      # view_map: {left: 0, right: 1}
+      cameras:
+        - '.*'
+    kwargs:
+      pad_size: 35
+      augmentations:
+        random_horizontal_flip: false
+        random_resize_aspect_ratio:
+          - 1.333
+          - 1.777
+        random_resize_scale:
+          - 0.5
+          - 1.0
+        reprob: 0.0
+        auto_augment: false
+        motion_shift: false
+        crop_height: 240
+        crop_width: 320
+      batch_size: 2
+      frames_per_clip: 8
+      min_length_to_drop: 9
+      read_intermediate_frames: true
+      num_workers: 10
+logging:
+  write_tag: world_model
+loss:
+  loss_exp: 2.0
+  cos_loss_weight: 1.0
+  power_loss_weight: 0.01
+  reg_coeff: [0.0]
+  no_loss_mask_tokens: False
+meta:
+  load_checkpoint: false
+  read_checkpoint: null
+  pretrained: jepa-pretrained.pth.tar
+  seed: 234
+  eval_freq: 150
+  use_sdpa: true
+  save_every_freq: 50
+  dtype: bfloat16 # float32 # float32 on H2, otherwise bfloat16
+model: # world model
+  transition_model:
+    config:
+      grid_height: 15
+      grid_width: 20
+      patch_size: 1
+      num_frames: 16
+      tubelet_size: 1
+      embed_dim: 1664
+      predictor_embed_dim: 1024
+      depth: 24
+      num_heads: 32
+      uniform_power: true
+      num_views: 1
+      action_conditioning: token # add action as a separate token
+      action_tokens: 1
+      action_dim: 35
+      state_tokens: 0
+      state_dim: 35
+      use_silu: False
+      use_activation_checkpointing: true
+      local_attn_window: [8, -1, -1]
+      attn_block_size: 64
+      use_rope: true
+      attn_impl: sdpa # fmha | sdpa | flex (fmha does not support local_attn_window)
+      use_alibi: false
+      encoder_layernorm: true
+    trainer:
+      rollout_steps: 1
+      predictor_window_steps: 1
+      eval_rollout_steps: 8 # to change this argument, adjust `num_frames` in data section accordingly
+      # 'random' -  choose a random context and rollout from it;
+      # 'all' - loop over all possible contexts (1, 2, ... , T-1 step) and rollout from each
+      train_rollout_prefixes: random
+      rollout_stop_gradient: True
+    optimizer:
+      use_radamw: false
+      betas: [0.9, 0.999]
+      eps: 1e-8
+      ipe_scale: 1.25
+      weight_decay: 0.01
+      final_weight_decay: 0.01
+      final_lr: 1.0e-06
+      start_lr: 0.0
+      ref_lr: 0.0005
+      warmup: 2
+      num_epochs: 90
+      iterations_per_epoch: 1000
+      clip_grad: 1.0
+      mixed_precision: true
+  heads:
+    train_predictor: false
+    train_heads_on_predictor: false
+    image_head:
+      kind: dit
+      diffusion_kwargs:
+        noise_schedule: cosine_simple_diffusion
+        shift: 1.0
+        clip_min: 1e-9
+        zero_terminal_snr: true
+        predict_v: false
+        predict_xstart: true
+        sigma_small: true
+        learn_sigma: false
+        diffusion_steps: 1000
+      config:
+        denoising_steps: [1000]
+        eval_denoising_steps: 128
+        patch_size: 1
+        use_cosmos: true
+        in_chans: 16
+        tubelet_size: 1
+        use_rope: true
+        num_frames: 8 # there is one extra frame due to how tokenizer works
+        decode_video: true
+        img_size: [30, 40] # frame size after cosmos tokenization
+        condition_dim: 1664
+        decoder_embed_dim: 1280
+        condition_dropout: 0.1
+        depth: 32
+        num_heads: 20
+        num_kv_heads: 10
+        mlp_ratio: 4.0
+        num_views: 1
+        condition_h: 15
+        condition_w: 20
+        condition_d: 8 # there is one extra frame due to how tokenizer works
+        use_activation_checkpointing: false
+        local_attn_window: [4, -1, -1]
+        # fmha does not support local windows; sdpa applies the local mask in dense form
+        # (memory-efficient backend).
+        attn_impl: sdpa
+        encoder_path: /path/to/Cosmos-0.1-Tokenizer-CV4x8x8/encoder.jit
+        decoder_path: /path/to/Cosmos-0.1-Tokenizer-CV4x8x8/decoder.jit
+      optimizer:
+        use_radamw: false
+        betas: [0.9, 0.95]
+        eps: 1e-8
+        ipe_scale: 1.25
+        weight_decay: 0.0
+        final_weight_decay: 0.0
+        final_lr: 0.0001
+        start_lr: 0.0001
+        ref_lr: 0.0001
+        warmup: 1
+        num_epochs: 1 # smoke: 1 epoch x 100 iterations = 100 optimizer steps
+        iterations_per_epoch: 100
+        clip_grad: 1.0
+        mixed_precision: true
+  main_optimizer: image_head
+  # Fir: public V-JEPA 2.1 ViT-G/384 (https://dl.fbaipublicfiles.com/vjepa2/vjepa2_1_vitG_384.pt)
+  encoder_pretrained_path: /path/to/vjepa2_1_vitG_384.pt
+  encoder_version: v21
+  # pretrained path for the world model e.g. to reuse the predictor
+  pretrained_path: none

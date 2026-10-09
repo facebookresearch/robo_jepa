@@ -1,0 +1,813 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+app: robo_jepa
+nodes: 64
+tasks_per_node: 8
+cpus_per_task: 16
+folder: /path/to/robo_jepa/scaling_bench/8b_final/
+wandb:
+  entity: null
+  project: droid_wm
+  name: wm-scaling-8b-final
+  'off': false
+  run_id: null
+data:
+  s3_profile: <aws_profile>
+  s3_prefix: s3://<bucket>/data/robotics/
+  train:
+    view_groups:
+      two_view:
+        num_views: 2
+        rank_range:
+        - 0
+        - 256
+        grad_accum_steps: 1
+        datasets:
+        - Droid
+        - Droid_joints
+        - Droid_cart_action_key
+        - Droid_joint_action_key
+        - Droid_cart_vel_action_key
+        - Droid_joint_vel_action_key
+        - Lerobot
+        - Lerobot_joints
+        - AGIBot_robotiq
+        - robomind_agilex
+        - RoboCasa
+        - RoboCasa_state_delta
+        - Roboset
+        - OXE_Bridge2
+        - Robomind_franka
+        weights:
+        - 0.03060546
+        - 0.03060546
+        - 0.03060546
+        - 0.03060546
+        - 0.03060546
+        - 0.03060546
+        - 0.01345457
+        - 0.01345457
+        - 0.58778739
+        - 0.01360242
+        - 0.03563244
+        - 0.03563244
+        - 0.09196422
+        - 0.018038
+        - 0.00680121
+      one_view:
+        num_views: 1
+        rank_range:
+        - 256
+        - 512
+        grad_accum_steps: 1
+        datasets:
+        - Droid
+        - Droid_joints
+        - Droid_cart_action_key
+        - Droid_joint_action_key
+        - Droid_cart_vel_action_key
+        - Droid_joint_vel_action_key
+        - Lerobot
+        - Lerobot_joints
+        - AGIBot_robotiq
+        - robomind_agilex
+        - RoboCasa
+        - RoboCasa_state_delta
+        - Roboset
+        - OXE_Bridge2
+        - Robomind_franka
+        - OXE_RT1
+        - OXE_Bridge
+        - OXE_qtopt
+        - OXE_mtopt
+        - OXE_robonet_franka
+        - OXE_robonet_baxter
+        - OXE_robonet_sawyer
+        - OXE_robonet_widowx
+        - OXE_robonet_kuka
+        - OXE_language_table_sim
+        - OXE_language_table_real
+        - OXE_bcz
+        - OXE_fmb
+        - 1X
+        - AGIBot_humanoid
+        dataset_overrides:
+          Droid:
+            cameras:
+            - left|right
+          Droid_joints:
+            cameras:
+            - left|right
+          Droid_cart_action_key:
+            cameras:
+            - left|right
+          Droid_joint_action_key:
+            cameras:
+            - left|right
+          Droid_cart_vel_action_key:
+            cameras:
+            - left|right
+          Droid_joint_vel_action_key:
+            cameras:
+            - left|right
+          Lerobot:
+            cameras:
+            - .*
+          Lerobot_joints:
+            cameras:
+            - .*
+          AGIBot_robotiq:
+            cameras:
+            - head_color
+          robomind_agilex:
+            cameras:
+            - camera_front
+          RoboCasa:
+            cameras:
+            - robot0_agentview_left|robot0_agentview_right
+          RoboCasa_state_delta:
+            cameras:
+            - robot0_agentview_left|robot0_agentview_right
+          Roboset:
+            cameras:
+            - left|right|top
+          OXE_Bridge2:
+            cameras:
+            - .*
+          Robomind_franka:
+            cameras:
+            - .*
+          AGIBot_humanoid:
+            cameras:
+            - head_color
+        weights:
+        - 0.02331606
+        - 0.02331606
+        - 0.02331606
+        - 0.02331606
+        - 0.02331606
+        - 0.02331606
+        - 0.01025006
+        - 0.01025006
+        - 0.4477923
+        - 0.01036269
+        - 0.02714575
+        - 0.02714575
+        - 0.07006082
+        - 0.01374183
+        - 0.00518135
+        - 0.00591349
+        - 0.00270331
+        - 0.01340392
+        - 0.03683262
+        - 0.01103852
+        - 0.02539986
+        - 0.07062401
+        - 0.00709619
+        - 0.00225276
+        - 0.01458662
+        - 0.02207704
+        - 0.00929263
+        - 0.00709619
+        - 0.00506871
+        - 0.00478711
+    Droid:
+      embodiment_name: franka
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      use_joint_state: false
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Droid_joints:
+      embodiment_name: franka_joints
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      use_joint_state: true
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Droid_cart_action_key:
+      embodiment_name: franka_cart_action_key
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 7.5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      action_source: action_key
+      action_key_layout: droid_cart
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Droid_joint_action_key:
+      embodiment_name: franka_joint_action_key
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 7.5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      action_source: action_key
+      action_key_layout: droid_joint
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Droid_cart_vel_action_key:
+      embodiment_name: franka_cart_vel_action_key
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 7.5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      action_source: action_key
+      action_key_layout: droid_cart_vel
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Droid_joint_vel_action_key:
+      embodiment_name: franka_joint_vel_action_key
+      s3_prefix: droid/1.0.1/
+      raw_fps: 60
+      fps: 7.5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 30
+      action_source: action_key
+      action_key_layout: droid_joint_vel
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      cameras:
+      - .*
+      - .*
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    Lerobot:
+      embodiment_name: so-101
+      s3_prefix: lerobot/single_arm_labeled
+      raw_fps: 30
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 5
+      intermediate_frames_fps: 30
+      view_map: {
+        left: 0, right: 1, right_1: 1, right_2: 1,
+        wrist: 2, top: 5, top_1: 5, top_2: 5, top_3: 5,
+        front: 6, front_1: 6, front_2: 6
+      }
+      cameras:
+      - .*
+      - .*
+    Lerobot_joints:
+      embodiment_name: so-101_joints
+      s3_prefix: lerobot/single_arm_labeled
+      raw_fps: 30
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 5
+      intermediate_frames_fps: 30
+      use_joint_state: true
+      view_map: {
+        left: 0, right: 1, right_1: 1, right_2: 1,
+        wrist: 2, top: 5, top_1: 5, top_2: 5, top_3: 5,
+        front: 6, front_1: 6, front_2: 6
+      }
+      cameras:
+      - .*
+      - .*
+    AGIBot_robotiq:
+      embodiment_name: agibot_robotic
+      s3_prefix: agibot/robotiq
+      raw_fps: 30
+      fps: 1
+      pose_dim: 23
+      gripper_dim: 2
+      joints_dim: 0
+      view_map:
+        hand_left_color: 2
+        hand_right_color: 2
+        head_color: 3
+      cameras:
+      - .*
+      - .*
+    robomind_agilex:
+      embodiment_name: agilex
+      s3_prefix: robomind/robomind_agilex
+      raw_fps: 30
+      fps: 5
+      pose_dim: 12
+      gripper_dim: 2
+      joints_dim: 12
+      view_map:
+        camera_front: 3
+        camera_left_wrist: 2
+        camera_right_wrist: 2
+      cameras:
+      - .*
+      - .*
+    RoboCasa:
+      embodiment_name: franka_omron
+      s3_prefix: robocasa/human_720p/
+      raw_fps: 20
+      fps: 5
+      pose_dim: 13
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 20
+      action_source: action_key
+      view_map:
+        robot0_agentview_left: 0
+        robot0_agentview_right: 1
+        robot0_eye_in_hand: 2
+      cameras:
+      - .*
+      - .*
+    RoboCasa_state_delta:
+      embodiment_name: franka_omron_state_delta
+      s3_prefix: robocasa/human_720p/
+      raw_fps: 20
+      fps: 5
+      pose_dim: 13
+      gripper_dim: 1
+      joints_dim: 7
+      intermediate_frames_fps: 20
+      view_map:
+        robot0_agentview_left: 0
+        robot0_agentview_right: 1
+        robot0_eye_in_hand: 2
+      cameras:
+      - .*
+      - .*
+    Roboset:
+      embodiment_name: franka_roboset
+      s3_prefix: roboset/
+      raw_fps: 5
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+        top: 5
+      intermediate_frames_fps: 5
+      cameras:
+      - .*
+      - .*
+    OXE_Bridge2:
+      embodiment_name: bridge
+      s3_prefix: oxe/bridge2
+      raw_fps: 5
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        right_back: 1
+        camera1: 4
+        camera2: 4
+      cameras:
+      - .*
+      - .*
+    Robomind_franka:
+      embodiment_name: robomind_franka
+      s3_prefix: robomind/robomind_franka
+      raw_fps: 30
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        camera_left: 0
+        camera_right: 1
+        camera_top: 5
+      cameras:
+      - .*
+      - .*
+    OXE_RT1:
+      embodiment_name: google
+      s3_prefix: rt1
+      raw_fps: 10
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        back: 3
+      cameras:
+      - back
+    OXE_Bridge:
+      embodiment_name: bridge
+      s3_prefix: oxe/bridge
+      raw_fps: 5
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        right: 1
+      cameras:
+      - right
+    OXE_qtopt:
+      embodiment_name: kuka
+      s3_prefix: qtopt
+      raw_fps: 10
+      fps: 10
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        left: 0
+      cameras:
+      - left
+    OXE_mtopt:
+      embodiment_name: kuka
+      s3_prefix: oxe/mtopt
+      raw_fps: 5
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        left: 0
+      cameras:
+      - left
+    OXE_robonet_franka:
+      embodiment_name: franka_robonet
+      s3_prefix: oxe/robonet/franka
+      raw_fps: 1
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        .*: 4
+      cameras:
+      - .*
+    OXE_robonet_baxter:
+      embodiment_name: baxter
+      s3_prefix: oxe/robonet/baxter
+      raw_fps: 1
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        .*: 4
+      cameras:
+      - .*
+    OXE_robonet_sawyer:
+      embodiment_name: sawyer
+      s3_prefix: oxe/robonet/sawyer
+      raw_fps: 1
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        .*: 4
+      cameras:
+      - .*
+    OXE_robonet_widowx:
+      embodiment_name: widowx_robonet
+      s3_prefix: oxe/robonet/sawyer
+      raw_fps: 1
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        .*: 4
+      cameras:
+      - .*
+    OXE_robonet_kuka:
+      embodiment_name: kuka_robonet
+      s3_prefix: oxe/robonet/kuka
+      raw_fps: 1
+      fps: 1
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        .*: 4
+      cameras:
+      - .*
+    OXE_language_table_sim:
+      embodiment_name: language_table
+      s3_prefix: oxe/language_table_sim/
+      raw_fps: 5
+      fps: 5
+      pose_dim: 2
+      gripper_dim: 0
+      joints_dim: 7
+      view_map:
+        front: 6
+      cameras:
+      - front
+    OXE_language_table_real:
+      embodiment_name: language_table
+      s3_prefix: oxe/language_table/
+      raw_fps: 5
+      fps: 5
+      pose_dim: 2
+      gripper_dim: 0
+      joints_dim: 7
+      view_map:
+        front: 6
+      cameras:
+      - front
+    OXE_bcz:
+      embodiment_name: google
+      s3_prefix: oxe/bc_z/
+      raw_fps: 10
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        back: 3
+      cameras:
+      - back
+    OXE_fmb:
+      embodiment_name: franka_fmb
+      s3_prefix: oxe/fmb/
+      raw_fps: 10
+      fps: 5
+      pose_dim: 6
+      gripper_dim: 1
+      joints_dim: 7
+      view_map:
+        left: 0
+        right: 1
+      cameras:
+      - left|right
+    1X:
+      embodiment_name: 1x_robot
+      s3_prefix: 1x-data
+      raw_fps: 30
+      fps: 3
+      pose_dim: 25
+      gripper_dim: 0
+      joints_dim: 0
+      view_map:
+        front: 3
+      cameras:
+      - front
+    AGIBot_humanoid:
+      embodiment_name: agibot_humanoid
+      s3_prefix: agibot/humanoid
+      raw_fps: 30
+      fps: 1
+      pose_dim: 23
+      gripper_dim: 12
+      joints_dim: 0
+      view_map:
+        hand_left_color: 2
+        hand_right_color: 2
+        head_color: 3
+      cameras:
+      - .*
+      - .*
+    kwargs:
+      pad_size: 64
+      augmentations:
+        random_horizontal_flip: false
+        random_resize_aspect_ratio:
+        - 1.333
+        - 1.777
+        random_resize_scale:
+        - 0.5
+        - 1.0
+        reprob: 0.0
+        auto_augment: false
+        motion_shift: false
+        crop_height: 240
+        crop_width: 320
+      batch_size: 1
+      frames_per_clip: 16
+      min_length_to_drop: 4
+      read_intermediate_frames: false
+      num_workers: 10
+logging:
+  write_tag: world_model
+loss:
+  loss_exp: 2.0
+  cos_loss_weight: 1.0
+  power_loss_weight: 0.01
+  reg_coeff:
+  - 0.0
+  no_loss_mask_tokens: false
+meta:
+  load_checkpoint: false
+  read_checkpoint: null
+  pretrained: jepa-pretrained.pth.tar
+  seed: 234
+  eval_freq: 150
+  use_sdpa: true
+  save_every_freq: 50
+  dtype: bfloat16
+  compile: true
+  load_checkpoint_strict: false
+  fsdp:
+    enabled: true
+    cpu_offload: false
+    mesh_layout: hsdp
+model:
+  transition_model:
+    config:
+      grid_height: 15
+      grid_width: 20
+      patch_size: 1
+      num_frames: 16
+      tubelet_size: 1
+      embed_dim: 1664
+      predictor_embed_dim: 3072
+      depth: 72
+      num_heads: 24
+      num_kv_heads: 12
+      uniform_power: true
+      num_views: 2
+      view_groups_v:
+      - 1
+      - 2
+      use_view_tokens: false
+      use_strong_view_conditioning: true
+      use_multiembodiment_proj: true
+      use_dt: false
+      view_map:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      embodiment_list:
+      - franka
+      - franka_joints
+      - franka_omron
+      - franka_omron_state_delta
+      - so-101
+      - agibot_robotic
+      - franka_roboset
+      - bridge
+      - agilex
+      - robomind_franka
+      - google
+      - kuka
+      - franka_robonet
+      - baxter
+      - sawyer
+      - widowx_robonet
+      - language_table
+      - franka_fmb
+      - kuka_robonet
+      - agibot_humanoid
+      - 1x_robot
+      - franka_cart_action_key
+      - franka_joint_action_key
+      - franka_cart_vel_action_key
+      - franka_joint_vel_action_key
+      - so-101_joints
+      action_conditioning: token
+      action_tokens: 1
+      action_dim: 64
+      state_tokens: 1
+      state_dim: 64
+      camera_extrinsics_tokens: 0
+      camera_extrinsics_dim: 6
+      decode_state: false
+      use_silu: false
+      use_activation_checkpointing: true
+      local_attn_window:
+      - 8
+      - -1
+      - -1
+      attn_block_size: 64
+      use_rope: true
+      attn_impl: fmha
+      use_alibi: false
+      encoder_layernorm: true
+      norm_type: rmsnorm
+      use_qk_norm: true
+      qk_norm_type: rmsnorm
+    trainer:
+      rollout_steps: 2
+      predictor_window_steps: 1
+      eval_rollout_steps: 10
+      train_rollout_prefixes: random
+      rollout_stop_gradient: true
+      # Optional per-view L1 loss weighting: {int_view_id: float_weight}.
+      # Missing IDs default to weight 1.0 (or to view_loss_weights[-1] if set).
+      # The special key -1 sets the default weight for any view not explicitly
+      # listed. Empty dict = no-op.
+      # Canonical convention: 0=left, 1=right, 2=wrist. Examples:
+      #   {2: 5.0}            -> wrist 5x, all other views 1x
+      #   {-1: 0.5, 2: 5.0}   -> wrist 5x, all other views 0.5x
+      view_loss_weights: {}
+    optimizer:
+      use_radamw: false
+      betas:
+      - 0.9
+      - 0.95
+      eps: 1e-8
+      ipe_scale: 1.25
+      weight_decay: 0.1
+      final_weight_decay: 0.1
+      final_lr: 5.0e-05
+      start_lr: 0.0
+      ref_lr: 5.0e-05
+      warmup: 10
+      num_epochs: 5000
+      iterations_per_epoch: 200
+      clip_grad: 1.0
+      mixed_precision: true
+  heads: none
+  main_optimizer: transition_model
+  encoder_pretrained_path: /path/to/vjepa2_1_vitG_384.pt
+  encoder_version: v21
+  pretrained_path: none

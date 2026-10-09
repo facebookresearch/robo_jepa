@@ -1,0 +1,35 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Lightweight checks that need no GPU or datasets: every Python file compiles, YAML configs parse,
+# shell scripts parse, and first-party source files carry the copyright header.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pyyaml
+      - name: Python files compile
+        run: python -m compileall -q $(git ls-files '*.py')
+      - name: YAML configs parse
+        run: python -c "import sys, yaml; [yaml.safe_load(open(f)) for f in sys.argv[1:]]" $(git ls-files '*.yaml' '*.yml')
+      - name: Shell scripts parse
+        run: for f in $(git ls-files '*.sh'); do bash -n "$f"; done
+      - name: Copyright headers
+        run: |
+          missing=$(for f in $(git ls-files '*.py' '*.sh' '*.yaml' '*.yml'); do
+            head -n 16 "$f" | grep -q 'Copyright (c) Meta Platforms, Inc. and affiliates.' || echo "$f"; done)
+          if [ -n "$missing" ]; then echo "Missing copyright header:"; echo "$missing"; exit 1; fi

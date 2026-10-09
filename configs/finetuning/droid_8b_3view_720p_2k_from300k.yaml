@@ -1,0 +1,234 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+app: robo_jepa
+# ---------------------------------------------------------------------------
+# Droid-only high-resolution 3-view finetuning of the 8B world model.
+#
+#   * Dataset:        Droid ONLY, all 3 cameras (left, right, wrist) -> V=3.
+#   * Resolution:     720x1280 (encoder patch 16 -> grid 45x80).
+#   * Augmentations:  OFF — always the full-frame global crop
+#                     (random_resize_scale=[1,1], aspect pinned to 16:9).
+#   * Parallelism:    tensor-parallel size 4; global batch 64
+#                     (= 256 GPUs / tp 4 * batch_size 1) -> 32 nodes x 8.
+#   * Schedule:       WarmupCosineSchedule (cooldown DISABLED so warmup is
+#                     honored): linear warmup 0 -> 5e-5 over 140 steps, then
+#                     cosine decay 5e-5 -> 0 for a total of 2000 optimizer
+#                     steps (num_epochs 100 * ipe 20). Short warm-start run
+#                     with an end-of-run anneal for a clean final checkpoint.
+#   * Checkpoints:    save_every_freq=-1 -> only the OVERWRITING
+#                     world_model-latest(.pth.tar + _optim/) is kept (+.prev
+#                     backup); no accumulating per-epoch snapshots (no bloat).
+#   * Init:           v5 cooldown 8B @ 300k packaged weights, warm-start only
+#                     (load_optimizer=false -> fresh AdamW + start_epoch=0).
+# ---------------------------------------------------------------------------
+data:
+  train:
+    Droid:
+      fps: 5
+      cameras:
+      - left
+      - right
+      - wrist
+      raw_fps: 60
+      pose_dim: 6
+      view_map:
+        left: 0
+        right: 1
+        wrist: 2
+      s3_prefix: droid/1.0.1/
+      joints_dim: 7
+      gripper_dim: 1
+      embodiment_name: franka
+      use_joint_state: false
+      filter_samples_func: app.robo_jepa.datasets.droid.filter_positive_negative_droid
+      intermediate_frames_fps: 30
+      filter_samples_func_kwargs:
+        negative_filter:
+          labs:
+          - REAL
+          buildings:
+          - setup room
+    kwargs:
+      pad_size: 64
+      batch_size: 1
+      num_workers: 4
+      augmentations:
+        reprob: 0
+        crop_width: 1280
+        crop_height: 720
+        auto_augment: false
+        motion_shift: false
+        random_resize_scale:
+        - 1
+        - 1
+        random_horizontal_flip: false
+        random_resize_aspect_ratio:
+        - 1.7778
+        - 1.7778
+      frames_per_clip: 16
+      min_length_to_drop: 11
+      read_intermediate_frames: false
+    view_groups:
+      three_view:
+        datasets:
+        - Droid
+        weights:
+        - 1.0
+        grad_accum_steps: 1
+        num_views: 3
+        batch_size: 1
+        rank_range:
+        - 0
+        - 256
+  s3_prefix: s3://<bucket>/data/robotics/
+  s3_profile: <aws_profile>
+loss:
+  loss_exp: 2
+  reg_coeff:
+  - 0
+  cos_loss_weight: 1
+  power_loss_weight: 0.01
+  no_loss_mask_tokens: false
+meta:
+  fsdp:
+    enabled: false
+    cpu_offload: false
+    mesh_layout: hsdp
+  seed: 234
+  dtype: bfloat16
+  compile: false
+  use_sdpa: true
+  eval_freq: 150
+  cooldown:
+    enabled: false
+  load_checkpoint: true
+  load_optimizer: false
+  save_every_freq: -1
+  load_checkpoint_strict: false
+  tp:
+    size: 4
+  read_checkpoint: /path/to/wm-8b/cooldown_8b_300k.pth.tar
+model:
+  heads: none
+  main_optimizer: transition_model
+  encoder_version: v21
+  pretrained_path: none
+  transition_model:
+    config:
+      depth: 72
+      use_dt: false
+      use_rope: true
+      use_silu: false
+      view_map:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      attn_impl: fmha
+      embed_dim: 1664
+      norm_type: rmsnorm
+      num_heads: 24
+      num_views: 3
+      state_dim: 64
+      use_alibi: false
+      action_dim: 64
+      grid_width: 80
+      num_frames: 16
+      patch_size: 1
+      grid_height: 45
+      use_qk_norm: true
+      decode_state: false
+      num_kv_heads: 12
+      qk_norm_type: rmsnorm
+      state_tokens: 1
+      tubelet_size: 1
+      action_tokens: 1
+      uniform_power: true
+      view_groups_v:
+      - 3
+      attn_block_size: 64
+      embodiment_list:
+      - franka
+      - franka_joints
+      - franka_omron
+      - franka_omron_state_delta
+      - so-101
+      - agibot_robotic
+      - franka_roboset
+      - bridge
+      - agilex
+      - robomind_franka
+      - google
+      - kuka
+      - franka_robonet
+      - baxter
+      - sawyer
+      - widowx_robonet
+      - language_table
+      - franka_fmb
+      - kuka_robonet
+      - agibot_humanoid
+      - 1x_robot
+      - franka_cart_action_key
+      - franka_joint_action_key
+      - franka_cart_vel_action_key
+      - franka_joint_vel_action_key
+      - so-101_joints
+      use_view_tokens: false
+      encoder_layernorm: true
+      local_attn_window:
+      - 8
+      - -1
+      - -1
+      action_conditioning: token
+      predictor_embed_dim: 3072
+      camera_extrinsics_dim: 6
+      camera_extrinsics_tokens: 0
+      use_multiembodiment_proj: true
+      use_activation_checkpointing: true
+      use_strong_view_conditioning: true
+    trainer:
+      rollout_steps: 10
+      eval_rollout_steps: 10
+      rollout_stop_gradient: true
+      rollout_fused_backward: true
+      rollout_fused_kv_cache: true
+      predictor_window_steps: 1
+      train_rollout_prefixes: random
+    optimizer:
+      eps: 1e-8
+      betas:
+      - 0.9
+      - 0.95
+      ref_lr: 5.0e-05
+      warmup: 7
+      final_lr: 0.0
+      start_lr: 0
+      clip_grad: 1
+      ipe_scale: 1.0
+      num_epochs: 100
+      use_radamw: false
+      weight_decay: 0.1
+      mixed_precision: true
+      final_weight_decay: 0.1
+      iterations_per_epoch: 20
+  encoder_pretrained_path: /path/to/vjepa2_1_vitG_384.pt
+nodes: 32
+wandb:
+  entity: null
+  project: robo_jepa
+  name: wm-ft-droid-8b-3view-720p-2k-from300k
+  'off': false
+  run_id: null
+folder: /path/to/robo_jepa/finetune/droid_8b_3view_720p_2k_from300k/
+logging:
+  write_tag: world_model
+cpus_per_task: 16
+tasks_per_node: 8

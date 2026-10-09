@@ -1,0 +1,152 @@
+{
+  "base_pose": {
+    "init_robot_base_ori": [
+      0.0,
+      0.0,
+      4.712296326794897
+    ],
+    "init_robot_base_pos": [
+      3.9913984828606597,
+      -1.7535629500509704,
+      0.0
+    ]
+  },
+  "episodes": {
+    "4": {
+      "goal": [
+        4.286192594671676,
+        -2.175601275486045,
+        1.3202160929904032
+      ],
+      "init": [
+        3.8666328624433723,
+        -2.22931131803245,
+        1.2671714051582212
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_island_group",
+      "obstacle_world_pos": [
+        4.052186674964508,
+        -2.1218583536792295,
+        1.108
+      ],
+      "obstacle_y_half_extent_m": 0.1473576526358967
+    },
+    "5": {
+      "goal": [
+        4.28270033655684,
+        -2.201464860416318,
+        1.341116502835942
+      ],
+      "init": [
+        3.910027883744137,
+        -2.1069262391517825,
+        1.3032836420801144
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_island_group",
+      "obstacle_world_pos": [
+        4.052186674964508,
+        -2.1218583536792295,
+        1.108
+      ],
+      "obstacle_y_half_extent_m": 0.1473576526358967
+    },
+    "6": {
+      "goal": [
+        3.8781602024150525,
+        -2.0085988190332826,
+        1.3152373489315214
+      ],
+      "init": [
+        4.3266082475870355,
+        -2.0728659088910923,
+        1.4103931874363624
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_island_group",
+      "obstacle_world_pos": [
+        4.052186674964508,
+        -2.1218583536792295,
+        1.108
+      ],
+      "obstacle_y_half_extent_m": 0.1473576526358967
+    },
+    "8": {
+      "goal": [
+        4.28548948199641,
+        -2.182160393951265,
+        1.3024336624080246
+      ],
+      "init": [
+        3.8404147839884306,
+        -2.059812274243349,
+        1.2203751409780783
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_island_group",
+      "obstacle_world_pos": [
+        4.052186674964508,
+        -2.1218583536792295,
+        1.108
+      ],
+      "obstacle_y_half_extent_m": 0.1473576526358967
+    },
+    "9": {
+      "goal": [
+        3.8958862366648512,
+        -2.115611861847012,
+        1.1891390775236685
+      ],
+      "init": [
+        4.286198003541257,
+        -2.0646257053454216,
+        1.2959267070196825
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_island_group",
+      "obstacle_world_pos": [
+        4.052186674964508,
+        -2.1218583536792295,
+        1.108
+      ],
+      "obstacle_y_half_extent_m": 0.1473576526358967
+    }
+  },
+  "failed_episodes": [
+    {
+      "episode_idx": 0,
+      "error": "_sample_obstacle_reach_targets: no accepted draw after 10000 tries (seed=600018, obstacle=stand_mixer_island_group, y_half=0.147 m, clearance=0.197 m, d_min=0.250, d_max=0.500). Either widen [reach_min_distance, reach_max_distance], shrink obstacle_clearance_m, or shrink obstacle_lateral_jitter_std."
+    },
+    {
+      "episode_idx": 1,
+      "error": "_sample_obstacle_reach_targets: no accepted draw after 10000 tries (seed=600019, obstacle=stand_mixer_island_group, y_half=0.147 m, clearance=0.197 m, d_min=0.250, d_max=0.500). Either widen [reach_min_distance, reach_max_distance], shrink obstacle_clearance_m, or shrink obstacle_lateral_jitter_std."
+    },
+    {
+      "episode_idx": 2,
+      "error": "_sample_obstacle_reach_targets: no accepted draw after 10000 tries (seed=600020, obstacle=stand_mixer_island_group, y_half=0.147 m, clearance=0.197 m, d_min=0.250, d_max=0.500). Either widen [reach_min_distance, reach_max_distance], shrink obstacle_clearance_m, or shrink obstacle_lateral_jitter_std."
+    },
+    {
+      "episode_idx": 3,
+      "error": "_sample_obstacle_reach_targets: no accepted draw after 10000 tries (seed=600021, obstacle=stand_mixer_island_group, y_half=0.147 m, clearance=0.197 m, d_min=0.250, d_max=0.500). Either widen [reach_min_distance, reach_max_distance], shrink obstacle_clearance_m, or shrink obstacle_lateral_jitter_std."
+    },
+    {
+      "episode_idx": 7,
+      "error": "_sample_obstacle_reach_targets: no accepted draw after 10000 tries (seed=600025, obstacle=stand_mixer_island_group, y_half=0.147 m, clearance=0.197 m, d_min=0.250, d_max=0.500). Either widen [reach_min_distance, reach_max_distance], shrink obstacle_clearance_m, or shrink obstacle_lateral_jitter_std."
+    }
+  ],
+  "kitchen_split": "target",
+  "obstacle_classes": [
+    "StandMixer",
+    "Blender",
+    "CoffeeMachine",
+    "Toaster"
+  ],
+  "obstacle_clearance_m": 0.05,
+  "obstacle_lateral_jitter_std": 0.05,
+  "reach_clear_radius": 1.0,
+  "reach_max_distance": 0.5,
+  "reach_min_distance": 0.25,
+  "scene_seed": 6,
+  "schema_version": 1
+}

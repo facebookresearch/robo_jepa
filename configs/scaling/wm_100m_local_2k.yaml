@@ -1,0 +1,193 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+# 100M world model, 2k steps on the three local datasets (DROID + LeRobot + AgiBot).
+# A short run for testing code against a real WM, sized to fit 3h scheduling windows;
+# submitit requeues and train.py resumes from the latest checkpoint if it needs more.
+# Differs from wm_100m.yaml: 1 node x 4 GPUs (batch 2/GPU), one view group, three datasets,
+# 20 epochs x 100 iters = 2000 steps, evals off, compile off, attn_impl sdpa, local paths.
+app: robo_jepa
+nodes: 1
+tasks_per_node: 4
+gpu_type: h100
+cpus_per_task: 12
+mem_per_gpu: 200G
+folder: /path/to/robo_jepa/logs/scaling/wm_100m_local_2k/
+slurm_setup:
+- srun --ntasks=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 bash scripts/data_processing/prepare_data.sh droid
+- srun --ntasks=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 bash scripts/data_processing/prepare_data.sh lerobot
+- srun --ntasks=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 bash scripts/data_processing/prepare_data.sh agibot
+wandb:
+  entity: null
+  project: droid_wm
+  name: wm-100m-local-2k
+  'off': false
+  run_id: null
+data:
+  s3_profile: null
+  s3_prefix: ${SLURM_TMPDIR}/
+  train:
+    Droid:
+      embodiment_name: franka
+      s3_prefix: droid
+      raw_fps: 15
+      fps: 1.875
+      cameras:
+      - left|right|wrist
+    Lerobot:
+      embodiment_name: so-101
+      s3_prefix: lerobot
+      raw_fps: 30
+      fps: 7.5
+      cameras:
+      - .*
+    AGIBot:
+      embodiment_name: agibot_robotic
+      s3_prefix: agibot
+      raw_fps: 30
+      fps: 3.75
+      cameras:
+      - .*
+      state_keys:
+      - end/position
+      - end/orientation
+      - head/position
+      - waist/position
+      - robot/position
+      - robot/orientation
+      gripper_keys:
+      - effector/position
+      pose_dim: 25
+      gripper_dim: 2
+      joints_dim: 0
+    weights:
+    - 0.34
+    - 0.33
+    - 0.33
+    kwargs:
+      pad_size: 64
+      augmentations:
+        random_horizontal_flip: false
+        random_resize_aspect_ratio:
+        - 1.333
+        - 1.777
+        random_resize_scale:
+        - 0.5
+        - 1.0
+        reprob: 0.0
+        auto_augment: false
+        motion_shift: false
+        crop_height: 240
+        crop_width: 320
+      batch_size: 2
+      frames_per_clip: 16
+      min_length_to_drop: 4
+      read_intermediate_frames: false
+      num_workers: 10
+logging:
+  write_tag: world_model
+loss:
+  loss_exp: 2.0
+  cos_loss_weight: 1.0
+  power_loss_weight: 0.01
+  reg_coeff:
+  - 0.0
+  no_loss_mask_tokens: false
+meta:
+  load_checkpoint: false
+  read_checkpoint: null
+  pretrained: jepa-pretrained.pth.tar
+  seed: 234
+  eval_freq: 150
+  use_sdpa: true
+  save_every_freq: 1
+  dtype: bfloat16
+  compile: false
+  load_checkpoint_strict: false
+  fsdp:
+    enabled: false
+    cpu_offload: false
+    mesh_layout: hsdp
+model:
+  transition_model:
+    config:
+      grid_height: 15
+      grid_width: 20
+      patch_size: 1
+      num_frames: 16
+      tubelet_size: 1
+      embed_dim: 1664
+      predictor_embed_dim: 768
+      depth: 14
+      num_heads: 6
+      num_kv_heads: 6
+      uniform_power: true
+      num_views: 1
+      view_groups_v:
+      - 1
+      use_view_tokens: false
+      use_strong_view_conditioning: true
+      use_multiembodiment_proj: true
+      use_dt: false
+      view_map:
+      - 0
+      - 1
+      - 2
+      embodiment_list:
+      - franka
+      - so-101
+      - agibot_robotic
+      action_conditioning: token
+      action_tokens: 1
+      action_dim: 64
+      state_tokens: 1
+      state_dim: 64
+      camera_extrinsics_tokens: 0
+      camera_extrinsics_dim: 6
+      decode_state: false
+      use_silu: false
+      use_activation_checkpointing: false
+      local_attn_window:
+      - 8
+      - -1
+      - -1
+      attn_block_size: 64
+      use_rope: true
+      attn_impl: sdpa
+      use_alibi: false
+      encoder_layernorm: true
+      norm_type: rmsnorm
+      use_qk_norm: true
+      qk_norm_type: rmsnorm
+    trainer:
+      rollout_steps: 2
+      predictor_window_steps: 1
+      eval_rollout_steps: 10
+      train_rollout_prefixes: random
+      rollout_stop_gradient: true
+      view_loss_weights: {}
+    optimizer:
+      use_radamw: false
+      betas:
+      - 0.9
+      - 0.95
+      eps: 1e-8
+      ipe_scale: 1.25
+      weight_decay: 0.1
+      final_weight_decay: 0.1
+      final_lr: 5.0e-05
+      start_lr: 0.0
+      ref_lr: 5.0e-05
+      warmup: 1
+      num_epochs: 20
+      iterations_per_epoch: 100
+      clip_grad: 1.0
+      mixed_precision: true
+  heads: none
+  main_optimizer: transition_model
+  encoder_pretrained_path: /path/to/vjepa2_1_vitG_384.pt
+  encoder_version: v21
+  pretrained_path: none

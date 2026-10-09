@@ -1,0 +1,16 @@
+{
+  "scene_seed": 5,
+  "reach_task_seed": 5,
+  "reach_max_distance": 0.3,
+  "expected_d0_m": 0.2940470667705534,
+  "init": {
+    "mode": "init",
+    "seed": 5,
+    "reach_task_seed": 5
+  },
+  "goal": {
+    "mode": "goal",
+    "seed": 5,
+    "reach_task_seed": 5
+  }
+}

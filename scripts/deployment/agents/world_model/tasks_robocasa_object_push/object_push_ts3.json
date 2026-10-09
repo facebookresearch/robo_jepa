@@ -1,0 +1,11 @@
+{
+  "goal": {
+    "mode": "goal",
+    "object_push_task_seed": 3
+  },
+  "init": {
+    "mode": "init",
+    "object_push_task_seed": 3
+  },
+  "object_push_task_seed": 3
+}

@@ -1,0 +1,21 @@
+{
+  "goal": {
+    "mode": "goal",
+    "reach_task_seed": 3,
+    "seed": 3
+  },
+  "init": {
+    "mode": "init",
+    "reach_task_seed": 3,
+    "seed": 3
+  },
+  "obstacle_classes": [
+    "CoffeeMachine"
+  ],
+  "obstacle_clearance_m": 0.12,
+  "obstacle_lateral_jitter_std": 0.05,
+  "reach_max_distance": 0.8,
+  "reach_min_distance": 0.4,
+  "reach_task_seed": 3,
+  "scene_seed": 3
+}

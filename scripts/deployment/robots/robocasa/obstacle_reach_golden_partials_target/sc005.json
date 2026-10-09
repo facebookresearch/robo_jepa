@@ -1,0 +1,230 @@
+{
+  "base_pose": {
+    "init_robot_base_ori": [
+      0.0,
+      0.0,
+      3.1415963267948968
+    ],
+    "init_robot_base_pos": [
+      0.816266578410505,
+      -2.000594840613491,
+      0.0
+    ]
+  },
+  "episodes": {
+    "0": {
+      "goal": [
+        0.41466917190119623,
+        -2.3534982271905776,
+        1.4195143665371321
+      ],
+      "init": [
+        0.5752190650324606,
+        -1.9863304555189003,
+        1.3297363604862662
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "1": {
+      "goal": [
+        0.5130105666971685,
+        -2.2821434018921334,
+        1.2533248494337206
+      ],
+      "init": [
+        0.4637291365202006,
+        -1.9420154242314442,
+        1.2961537393584102
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "2": {
+      "goal": [
+        0.41017825517733986,
+        -1.8430585584473074,
+        1.37088974462091
+      ],
+      "init": [
+        0.5279726609297983,
+        -2.3137279087771416,
+        1.2507354225835765
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "3": {
+      "goal": [
+        0.5307355549072205,
+        -1.8757375831127483,
+        1.3206866906600432
+      ],
+      "init": [
+        0.547987050525294,
+        -2.309616031144853,
+        1.3977324307627903
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "4": {
+      "goal": [
+        0.49600195935246083,
+        -2.345950966391814,
+        1.3299313575518485
+      ],
+      "init": [
+        0.562446653735742,
+        -1.9220600917412394,
+        1.3130024211471198
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "5": {
+      "goal": [
+        0.4338040570653764,
+        -2.2749195515957332,
+        1.2870829971729238
+      ],
+      "init": [
+        0.5150643456386758,
+        -1.9535539708306036,
+        1.2972331836716395
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "6": {
+      "goal": [
+        0.4875152838988225,
+        -2.307103489721615,
+        1.2519744843463785
+      ],
+      "init": [
+        0.4579504699175525,
+        -1.850924227943331,
+        1.2827605306236665
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "7": {
+      "goal": [
+        0.45254388843035337,
+        -1.9083247933800185,
+        1.2867219021026848
+      ],
+      "init": [
+        0.5612137398131604,
+        -2.3345456461244614,
+        1.2898919654145644
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "8": {
+      "goal": [
+        0.4431216551842644,
+        -1.9284985548565428,
+        1.362199343950471
+      ],
+      "init": [
+        0.4663241156426375,
+        -2.324211259032838,
+        1.312291749821539
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    },
+    "9": {
+      "goal": [
+        0.4857565182232041,
+        -2.3606881269855027,
+        1.356272080364606
+      ],
+      "init": [
+        0.5024304156513488,
+        -1.9069978784778323,
+        1.2654917533704373
+      ],
+      "obstacle_class": "StandMixer",
+      "obstacle_fixture_name": "stand_mixer_left_group",
+      "obstacle_world_pos": [
+        0.4816951601359978,
+        -2.108222540301614,
+        1.0879983744041601
+      ],
+      "obstacle_y_half_extent_m": 0.16048402450561433
+    }
+  },
+  "kitchen_split": "target",
+  "obstacle_classes": [
+    "StandMixer",
+    "Blender",
+    "CoffeeMachine",
+    "Toaster"
+  ],
+  "obstacle_clearance_m": 0.05,
+  "obstacle_lateral_jitter_std": 0.05,
+  "reach_clear_radius": 1.0,
+  "reach_max_distance": 0.5,
+  "reach_min_distance": 0.25,
+  "scene_seed": 5,
+  "schema_version": 1
+}
