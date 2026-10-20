@@ -29,6 +29,7 @@ import os
 import random
 import re
 import shutil
+import sys
 import tempfile
 import time
 from collections import defaultdict
@@ -76,28 +77,43 @@ def load_dir(models_dir, size, ckpt, encoder):
     config["attn_impl"] = "sdpa"
     with open(os.path.join(tmp, "config.json"), "w") as f:
         json.dump(config, f, indent=2)
-    os.symlink(ckpt, os.path.join(tmp, "world_model.pth.tar"))
-    os.symlink(encoder, os.path.join(tmp, "encoder.pth.tar"))
+    os.symlink(os.path.abspath(ckpt), os.path.join(tmp, "world_model.pth.tar"))
+    os.symlink(os.path.abspath(encoder), os.path.join(tmp, "encoder.pth.tar"))
     return tmp
 
 
 def ensure_metadata(data):
     """The lab/building filter reads <data>/aggregated_metadata.json ({episode: DROID metadata}). convert_droid.py
-    keeps each episode's metadata_*.json; collect those of the holdout lab if the file is missing."""
+    keeps each episode's metadata_*.json; add those the file lacks. All episodes, not only the holdout lab: training
+    on the same root reads this file for its negative filter and drops episodes without metadata. Existing entries
+    are kept, so a file written for the holdout lab alone is completed rather than trusted."""
     path = os.path.join(data, "aggregated_metadata.json")
-    if os.path.exists(path):
-        return
-    index = pd.read_csv(os.path.join(data, "dataset_index.csv"))
     metadata = {}
-    for episode in index["metadata"]:
-        if not str(episode).startswith(f"{HOLDOUT_LAB}/"):
+    if os.path.exists(path):
+        with open(path) as f:
+            metadata = json.load(f)
+    index = pd.read_csv(os.path.join(data, "dataset_index.csv"))
+    before = len(metadata)
+    # convert_droid.py writes only `path`; filter_droid falls back to it as the key
+    for episode in index["metadata" if "metadata" in index else "path"]:
+        if not isinstance(episode, str) or episode in metadata:
             continue
         for f in glob.glob(os.path.join(data, episode, "metadata_*.json")):
             with open(f) as fh:
                 metadata[episode] = json.load(fh)
-    with open(path, "w") as f:
-        json.dump(metadata, f)
-    print(f"wrote {path} ({len(metadata)} {HOLDOUT_LAB} episodes)", flush=True)
+    added = len(metadata) - before
+    if not added:
+        return
+    try:
+        # write then rename, so an interrupted or concurrent run never leaves a truncated file
+        fd, tmp = tempfile.mkstemp(dir=data, prefix=".aggregated_metadata.", suffix=".json")
+        with os.fdopen(fd, "w") as f:
+            json.dump(metadata, f)
+        os.replace(tmp, path)
+    except OSError as e:
+        print(f"could not add {added} episodes to {path} ({e}); the building filter may drop them", flush=True)
+        return
+    print(f"added {added} episodes to {path} ({len(metadata)} total)", flush=True)
 
 
 def seed_all(seed):
@@ -276,6 +292,9 @@ def main():
     if args.steps:
         keep = {f"_{s}k.pth.tar" for s in args.steps.split(",")}
         ckpts = [c for c in ckpts if any(c.endswith(k) for k in keep)]
+    if not ckpts:
+        pattern = os.path.join(args.models_dir, f"wm-{args.size}", f"cooldown_{args.size}_*k.pth.tar")
+        sys.exit(f"no checkpoints match {pattern}" + (f" with --steps {args.steps}" if args.steps else ""))
     todo = [c for c in ckpts if not os.path.exists(os.path.join(args.out_dir, f"{os.path.basename(c)[:-8]}.json"))]
     print(f"wm-{args.size}: {len(ckpts)} checkpoints, {len(todo)} to evaluate", flush=True)
     if not todo:

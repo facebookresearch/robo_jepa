@@ -300,8 +300,8 @@ def _to_dcp_dir(path: str) -> str:
 
     The training pipeline historically uses `<folder>/world_model-latest.pth.tar`.
     For DCP we want a directory; strip the suffix if present.  This is
-    safer than `str.strip(".pth.tar")` (which would also remove leading/
-    trailing characters in the set, see the existing bug in world_model.py).
+    safer than `str.strip(".pth.tar")`, which would also remove leading/
+    trailing characters in the set.
     """
     if path.endswith(_PTH_TAR_SUFFIX):
         return path[: -len(_PTH_TAR_SUFFIX)]

@@ -20,7 +20,8 @@ def filter_droid(buildings, labs, instructions, samples, negative_filter=False, 
     if (buildings is not None and len(buildings) != 0) or (instructions is not None and len(instructions) != 0):
         filtered_samples = []
         for _, s in samples.iterrows():
-            curr_metadata = all_metadata.get(s.metadata)
+            # convert_droid.py writes only `path`, which is also the metadata key
+            curr_metadata = all_metadata.get(s.get("metadata", s.path))
             if curr_metadata is None:
                 # filtered_samples.append(s)
                 no_meta += 1

@@ -28,4 +28,5 @@ Output:
 - One JSON per checkpoint goes in `--out-dir`, with `rollout_l1_per_step`, `rollout_l1_mean_1_9` and
   `step9_rollout_l1`.
 - Checkpoints that already have a JSON are skipped, so an interrupted run resumes.
-- On first use, the script writes `aggregated_metadata.json` (the REAL-lab episode metadata) into `--data`.
+- The script adds the metadata of every episode missing from `<--data>/aggregated_metadata.json`, creating the file
+  if needed; existing entries are kept.

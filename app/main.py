@@ -8,6 +8,8 @@ import argparse
 import datetime
 import multiprocessing as mp
 import pprint
+from multiprocessing.connection import wait
+import sys
 from pathlib import Path
 
 import yaml
@@ -83,5 +85,24 @@ if __name__ == "__main__":
     else:
         num_gpus = len(args.devices)
         mp.set_start_method("spawn")
-        for rank in range(num_gpus):
-            mp.Process(target=process_main, args=(rank, args.fname, num_gpus, args.devices)).start()
+        processes = [
+            mp.Process(target=process_main, args=(rank, args.fname, num_gpus, args.devices))
+            for rank in range(num_gpus)
+        ]
+        for p in processes:
+            p.start()
+        # Stop at the first failed rank: the others would otherwise wait in a collective until the NCCL timeout.
+        running = set(range(num_gpus))
+        failed = []
+        while running and not failed:
+            wait([processes[rank].sentinel for rank in running])
+            for rank in [r for r in running if not processes[r].is_alive()]:
+                running.discard(rank)
+                if processes[rank].exitcode != 0:
+                    failed.append(rank)
+        for rank in running:
+            processes[rank].terminate()
+        for p in processes:
+            p.join()
+        if failed:
+            sys.exit(f"ranks {failed} failed")

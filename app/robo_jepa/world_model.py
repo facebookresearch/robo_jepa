@@ -779,7 +779,14 @@ class WorldModel(TrainableModel):
         start_epoch = 0
         if load_heads:
             for name, head in self.heads.items():
-                head_path = path.strip(".pth.tar") + "_" + name + ".pth.tar"
+                head_path = path.removesuffix(".pth.tar") + "_" + name + ".pth.tar"
+                # Heads saved before this used `path.strip(".pth.tar")`, e.g. `world_model-lates_image_head.pth.tar`.
+                # FSDP2 saves a DCP directory without the suffix, so check both forms.
+                legacy_path = path.strip(".pth.tar") + "_" + name + ".pth.tar"
+                saved = lambda p: os.path.exists(p) or os.path.isdir(p.removesuffix(".pth.tar"))  # noqa: E731
+                if not saved(head_path) and saved(legacy_path):
+                    logger.warning(f"loading head {name} from its pre-fix name {legacy_path}")
+                    head_path = legacy_path
                 start_epoch, _ = head.load_checkpoint(head_path, load_optimizer, strict, dont_load)
         if load_module:
             return super().load_checkpoint(path, load_optimizer, strict, dont_load)
@@ -787,7 +794,7 @@ class WorldModel(TrainableModel):
 
     def save_checkpoint(self, epoch, path, stats=None, rank=0):
         for name, head in self.heads.items():
-            head_path = path.strip(".pth.tar") + "_" + name + ".pth.tar"
+            head_path = path.removesuffix(".pth.tar") + "_" + name + ".pth.tar"
             # Forward rank as kwarg so the head's save_checkpoint sees the
             # caller's rank (its parent signature is `(epoch, path, stats, rank)`
             # — passing rank positionally would bind it to `stats`).
